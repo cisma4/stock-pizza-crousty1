@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>PIZZA CROUSTY - Stock connecté</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <title>PIZZA CROUSTY - Stock</title>
   <style>
     body {
       margin: 0;
@@ -12,27 +11,23 @@
       background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png');
       color: white;
     }
-
     h1 {
       text-align: center;
       font-size: 3em;
       color: orange;
       margin-top: 20px;
     }
-
     h2 {
       text-align: center;
       font-size: 1.8em;
       margin-bottom: 30px;
     }
-
     .grid-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       padding: 20px;
     }
-
     .product-card {
       background-color: black;
       padding: 15px;
@@ -43,29 +38,24 @@
       justify-content: space-between;
       transition: 0.3s;
     }
-
     .product-card:hover {
       box-shadow: 0 0 12px 2px white;
     }
-
     .product-name {
       font-weight: bold;
       margin-bottom: 10px;
       font-size: 1.4em;
       text-transform: uppercase;
     }
-
     .stock-value {
       font-size: 2em;
       margin: 10px 0;
     }
-
     .button-group {
       display: flex;
       justify-content: center;
       gap: 10px;
     }
-
     button {
       background-color: orange;
       border: none;
@@ -75,96 +65,127 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: darkorange;
     }
-
-    #message {
+    #save-button {
+      display: block;
+      margin: 30px auto;
+      padding: 10px 30px;
+      font-size: 1.4em;
+    }
+    #save-message {
       text-align: center;
       color: lightgreen;
+      margin-top: 10px;
       font-weight: bold;
-      margin-bottom: 20px;
+    }
+    #stock-note {
+      display: block;
+      margin: 20px auto;
+      width: 80%;
+      height: 300px;
+      background: #222;
+      color: white;
+      border: 1px solid orange;
+      font-size: 1em;
+      padding: 10px;
+      resize: vertical;
     }
   </style>
 </head>
 <body>
+
   <h1>PIZZA CROUSTY</h1>
   <h2>Stock</h2>
-  <div id="message"></div>
+
   <div class="grid-container" id="stock-list"></div>
+  <button id="save-button">Enregistrer</button>
+  <div id="save-message"></div>
+  <textarea id="stock-note" placeholder="La note de stock apparaîtra ici après enregistrement..."></textarea>
 
   <script>
-    const supabaseUrl = 'https://jzunmzjzdifcjdqvtalw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dW5temp6ZGlmY2pkcXZ0YWx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NzQ0NTcsImV4cCI6MjA2NTA1MDQ1N30.JF5rj9FdoM4fQMrSEldKKPy2ukCsim0VDxR5bbOVmr8';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const produits = [
+      "Lavette", "Emballage panini", "Monnaie", "Rouleau ticket", "Sac plastique", "JAVEL", "FARINE DE MAÏS",
+      "Produit nettoyant", "LAVETTES", "ÉPONGES", "Jambon", "Merguez", "Lardon", "Poulet", "Bacon", "Chorizo",
+      "Pepperoni", "Poivrons", "Champignons", "Tomates", "Salade", "Sauce fromagère", "Provolone", "Cheddar",
+      "Neufchâtel", "Parmesan", "Boursin", "Vache qui rit", "Levure", "Crème fraîche", "Mozza", "Raclette",
+      "Reblochons", "Chèvre", "Bleu", "Maroille", "Camembert", "Tarte", "Glace", "Kebab", "Émincé", "VH", "Panini",
+      "Fruits de mer", "Saumon", "Frites", "Onion ring", "Jalapenos", "Mozza stick", "Cheesy wedges", "Nuggets",
+      "Potatoes", "Tenders", "Wings", "Câpres", "Anchois", "Thon", "Artichaut", "Ananas", "Nutella", "Cellophane grand",
+      "Petit cellophane", "Sauce tomate", "Olives", "Oignons", "PDT", "Sel", "Sucre", "Huile", "Boîtes salade",
+      "Boîtes tarte", "Sacs poubelle", "Sacs plastiques", "Boîtes junior", "Boîtes senior", "Boîtes méga",
+      "Pepsi bouteille", "ICE tea bouteille", "7up bouteille", "Tropico bouteille", "Pepsi cannettes", "7up cannettes",
+      "Orangina cannette", "Oasis cannettes", "Lipton cannettes", "Schwepps", "Fanta", "Farine", "Oeufs", "Allu",
+      "BBQ", "Ketchup", "Poivre", "Salsa", "Curry", "Biggy", "Cornichon", "Miel", "Boîtes texmex", "BBQ texmex",
+      "Sauce piquante", "Sauce salade", "Brownie", "Beignet trio", "Fondant", "Tarte du jour", "Compote", "Caprisun",
+      "Liquide vaisselle", "Produit vitre", "Origan", "Persil", "Citron", "Huile d’olive"
+    ];
 
-    const container = document.getElementById('stock-list');
-    const message = document.getElementById('message');
+    const stockData = JSON.parse(localStorage.getItem('stockData')) || {};
+    const tempStock = { ...stockData };
 
-    async function loadStock() {
-      const { data, error } = await supabase.from('stock').select('*').order('nom');
-      if (error) {
-        message.textContent = "❌ Erreur de chargement";
-        console.error(error);
-        return;
-      }
-
-      container.innerHTML = '';
-      data.forEach(item => container.appendChild(createCard(item)));
-    }
-
-    async function updateStock(id, newValue) {
-      const { error } = await supabase.from('stock').update({ quantite: newValue }).eq('id', id);
-      if (error) {
-        message.textContent = "❌ Erreur de mise à jour";
-        console.error(error);
-      } else {
-        message.textContent = "✅ Stock mis à jour";
-        setTimeout(() => message.textContent = '', 1500);
-      }
-    }
-
-    function createCard(item) {
+    function createProductCard(nom) {
       const card = document.createElement('div');
       card.className = 'product-card';
 
       const name = document.createElement('div');
       name.className = 'product-name';
-      name.textContent = item.nom;
+      name.textContent = nom;
 
       const value = document.createElement('div');
       value.className = 'stock-value';
-      value.textContent = item.quantite;
+      value.textContent = tempStock[nom] || 0;
 
       const btnGroup = document.createElement('div');
       btnGroup.className = 'button-group';
 
       const minus = document.createElement('button');
       minus.textContent = '−';
-      minus.onclick = async () => {
-        if (item.quantite > 0) {
-          item.quantite -= 1;
-          value.textContent = item.quantite;
-          await updateStock(item.id, item.quantite);
+      minus.onclick = () => {
+        if ((tempStock[nom] || 0) > 0) {
+          tempStock[nom] -= 1;
+          value.textContent = tempStock[nom];
         }
       };
 
       const plus = document.createElement('button');
       plus.textContent = '+';
-      plus.onclick = async () => {
-        item.quantite += 1;
-        value.textContent = item.quantite;
-        await updateStock(item.id, item.quantite);
+      plus.onclick = () => {
+        tempStock[nom] = (tempStock[nom] || 0) + 1;
+        value.textContent = tempStock[nom];
       };
 
       btnGroup.append(minus, plus);
       card.append(name, value, btnGroup);
+
       return card;
     }
 
-    loadStock();
+    const stockList = document.getElementById('stock-list');
+    produits.forEach(produit => {
+      stockList.appendChild(createProductCard(produit));
+    });
+
+    document.getElementById('save-button').onclick = () => {
+      localStorage.setItem('stockData', JSON.stringify(tempStock));
+      document.getElementById('save-message').textContent = "✅ Sauvegardé";
+
+      let note = "";
+      for (let produit of produits) {
+        const qte = tempStock[produit] || 0;
+        if (qte > 0) {
+          note += `${produit} = ${qte}\n`;
+        }
+      }
+
+      document.getElementById("stock-note").value = note;
+
+      setTimeout(() => {
+        document.getElementById('save-message').textContent = "";
+      }, 2000);
+    };
   </script>
+
 </body>
 </html>
-
