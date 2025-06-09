@@ -11,23 +11,27 @@
       background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png');
       color: white;
     }
+
     h1 {
       text-align: center;
       font-size: 3em;
       color: orange;
       margin-top: 20px;
     }
+
     h2 {
       text-align: center;
       font-size: 1.8em;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
+
     .grid-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       padding: 20px;
     }
+
     .product-card {
       background-color: black;
       padding: 15px;
@@ -38,24 +42,29 @@
       justify-content: space-between;
       transition: 0.3s;
     }
+
     .product-card:hover {
       box-shadow: 0 0 12px 2px white;
     }
+
     .product-name {
       font-weight: bold;
       margin-bottom: 10px;
       font-size: 1.4em;
       text-transform: uppercase;
     }
+
     .stock-value {
       font-size: 2em;
       margin: 10px 0;
     }
+
     .button-group {
       display: flex;
       justify-content: center;
       gap: 10px;
     }
+
     button {
       background-color: orange;
       border: none;
@@ -65,26 +74,32 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: darkorange;
     }
-    #save-button {
-      display: block;
-      margin: 30px auto;
-      padding: 10px 30px;
-      font-size: 1.4em;
+
+    .action-buttons {
+      text-align: center;
+      margin: 20px 0;
     }
+
+    .action-buttons button {
+      margin: 10px;
+    }
+
     #save-message {
       text-align: center;
       color: lightgreen;
       margin-top: 10px;
       font-weight: bold;
     }
-    #stock-note {
+
+    textarea {
       display: block;
       margin: 20px auto;
       width: 80%;
-      height: 300px;
+      height: 200px;
       background: #222;
       color: white;
       border: 1px solid orange;
@@ -100,30 +115,41 @@
   <h2>Stock</h2>
 
   <div class="grid-container" id="stock-list"></div>
-  <button id="save-button">Enregistrer</button>
+
+  <div class="action-buttons">
+    <button id="save-button">Enregistrer</button>
+    <button id="copy-button">Copier la note</button>
+    <button id="reset-button">Réinitialiser le stock</button>
+  </div>
+
   <div id="save-message"></div>
+
   <textarea id="stock-note" placeholder="La note de stock apparaîtra ici après enregistrement..."></textarea>
 
+  <h2>Importer un stock</h2>
+  <textarea id="import-input" placeholder="Collez ici une liste comme :&#10;Lavette = 5&#10;Frites = 12"></textarea>
+  <button id="import-button">Importer depuis texte</button>
+
   <script>
-    const produits = [
-      "Lavette", "Emballage panini", "Monnaie", "Rouleau ticket", "Sac plastique", "JAVEL", "FARINE DE MAÏS",
-      "Produit nettoyant", "LAVETTES", "ÉPONGES", "Jambon", "Merguez", "Lardon", "Poulet", "Bacon", "Chorizo",
-      "Pepperoni", "Poivrons", "Champignons", "Tomates", "Salade", "Sauce fromagère", "Provolone", "Cheddar",
-      "Neufchâtel", "Parmesan", "Boursin", "Vache qui rit", "Levure", "Crème fraîche", "Mozza", "Raclette",
-      "Reblochons", "Chèvre", "Bleu", "Maroille", "Camembert", "Tarte", "Glace", "Kebab", "Émincé", "VH", "Panini",
-      "Fruits de mer", "Saumon", "Frites", "Onion ring", "Jalapenos", "Mozza stick", "Cheesy wedges", "Nuggets",
-      "Potatoes", "Tenders", "Wings", "Câpres", "Anchois", "Thon", "Artichaut", "Ananas", "Nutella", "Cellophane grand",
-      "Petit cellophane", "Sauce tomate", "Olives", "Oignons", "PDT", "Sel", "Sucre", "Huile", "Boîtes salade",
-      "Boîtes tarte", "Sacs poubelle", "Sacs plastiques", "Boîtes junior", "Boîtes senior", "Boîtes méga",
-      "Pepsi bouteille", "ICE tea bouteille", "7up bouteille", "Tropico bouteille", "Pepsi cannettes", "7up cannettes",
-      "Orangina cannette", "Oasis cannettes", "Lipton cannettes", "Schwepps", "Fanta", "Farine", "Oeufs", "Allu",
-      "BBQ", "Ketchup", "Poivre", "Salsa", "Curry", "Biggy", "Cornichon", "Miel", "Boîtes texmex", "BBQ texmex",
-      "Sauce piquante", "Sauce salade", "Brownie", "Beignet trio", "Fondant", "Tarte du jour", "Compote", "Caprisun",
-      "Liquide vaisselle", "Produit vitre", "Origan", "Persil", "Citron", "Huile d’olive"
+    const produits = [/* même liste */ "Lavette", "Emballage panini", "Monnaie", "Rouleau ticket", "Sac plastique", "JAVEL",
+      "FARINE DE MAÏS", "Produit nettoyant", "LAVETTES", "ÉPONGES", "Jambon", "Merguez", "Lardon", "Poulet", "Bacon",
+      "Chorizo", "Pepperoni", "Poivrons", "Champignons", "Tomates", "Salade", "Sauce fromagère", "Provolone", "Cheddar",
+      "Neufchâtel", "Parmesan", "Boursin", "Vache qui rit", "Levure", "Crème fraîche", "Mozza", "Raclette", "Reblochons",
+      "Chèvre", "Bleu", "Maroille", "Camembert", "Tarte", "Glace", "Kebab", "Émincé", "VH", "Panini", "Fruits de mer",
+      "Saumon", "Frites", "Onion ring", "Jalapenos", "Mozza stick", "Cheesy wedges", "Nuggets", "Potatoes", "Tenders",
+      "Wings", "Câpres", "Anchois", "Thon", "Artichaut", "Ananas", "Nutella", "Cellophane grand", "Petit cellophane",
+      "Sauce tomate", "Olives", "Oignons", "PDT", "Sel", "Sucre", "Huile", "Boîtes salade", "Boîtes tarte",
+      "Sacs poubelle", "Sacs plastiques", "Boîtes junior", "Boîtes senior", "Boîtes méga", "Pepsi bouteille",
+      "ICE tea bouteille", "7up bouteille", "Tropico bouteille", "Pepsi cannettes", "7up cannettes", "Orangina cannette",
+      "Oasis cannettes", "Lipton cannettes", "Schwepps", "Fanta", "Farine", "Oeufs", "Allu", "BBQ", "Ketchup", "Poivre",
+      "Salsa", "Curry", "Biggy", "Cornichon", "Miel", "Boîtes texmex", "BBQ texmex", "Sauce piquante", "Sauce salade",
+      "Brownie", "Beignet trio", "Fondant", "Tarte du jour", "Compote", "Caprisun", "Liquide vaisselle", "Produit vitre",
+      "Origan", "Persil", "Citron", "Huile d’olive"
     ];
 
     const stockData = JSON.parse(localStorage.getItem('stockData')) || {};
     const tempStock = { ...stockData };
+    const elements = {};
 
     function createProductCard(nom) {
       const card = document.createElement('div');
@@ -158,7 +184,7 @@
 
       btnGroup.append(minus, plus);
       card.append(name, value, btnGroup);
-
+      elements[nom] = value;
       return card;
     }
 
@@ -167,10 +193,7 @@
       stockList.appendChild(createProductCard(produit));
     });
 
-    document.getElementById('save-button').onclick = () => {
-      localStorage.setItem('stockData', JSON.stringify(tempStock));
-      document.getElementById('save-message').textContent = "✅ Sauvegardé";
-
+    function updateNote() {
       let note = "";
       for (let produit of produits) {
         const qte = tempStock[produit] || 0;
@@ -178,12 +201,61 @@
           note += `${produit} = ${qte}\n`;
         }
       }
-
       document.getElementById("stock-note").value = note;
+    }
 
+    document.getElementById('save-button').onclick = () => {
+      localStorage.setItem('stockData', JSON.stringify(tempStock));
+      updateNote();
+      document.getElementById('save-message').textContent = "✅ Sauvegardé";
       setTimeout(() => {
         document.getElementById('save-message').textContent = "";
       }, 2000);
+    };
+
+    document.getElementById('copy-button').onclick = () => {
+      const text = document.getElementById("stock-note").value;
+      navigator.clipboard.writeText(text).then(() => {
+        document.getElementById('save-message').textContent = "📋 Note copiée !";
+        setTimeout(() => {
+          document.getElementById('save-message').textContent = "";
+        }, 2000);
+      });
+    };
+
+    document.getElementById('reset-button').onclick = () => {
+      if (confirm("Réinitialiser tous les stocks à zéro ?")) {
+        produits.forEach(p => {
+          tempStock[p] = 0;
+          if (elements[p]) elements[p].textContent = 0;
+        });
+        localStorage.removeItem('stockData');
+        updateNote();
+        document.getElementById('save-message').textContent = "🔁 Réinitialisé";
+        setTimeout(() => {
+          document.getElementById('save-message').textContent = "";
+        }, 2000);
+      }
+    };
+
+    document.getElementById('import-button').onclick = () => {
+      const lines = document.getElementById("import-input").value.split("\n");
+      lines.forEach(line => {
+        const [keyRaw, valRaw] = line.split("=");
+        if (keyRaw && valRaw) {
+          const name = keyRaw.trim();
+          const val = parseInt(valRaw.trim());
+          if (produits.includes(name) && !isNaN(val) && val >= 0) {
+            tempStock[name] = val;
+            if (elements[name]) {
+              elements[name].textContent = val;
+            }
+          }
+        }
+      });
+      localStorage.setItem('stockData', JSON.stringify(tempStock));
+      updateNote();
+      alert("✅ Importation et enregistrement terminés !");
     };
   </script>
 
